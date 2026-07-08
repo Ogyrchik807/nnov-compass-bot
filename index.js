@@ -166,28 +166,24 @@ const LANDMARKS = [
     "lat": 56.329747,
     "lon": 43.998089,
     "description": "One of the oldest Orthodox churches in Nizhny Novgorod, mentioned from the 15th century. The stone church was consecrated in 1683 and is located on Rozhdestvenskaya Street near the Kremlin.",
-    "source": "Coordinates verified from Wikipedia [citation:4]"
   },
   {
     "name": "Church of the Nativity of John the Baptist on the Market",
     "lat": 56.329792,
     "lon": 43.998142,
     "description": "A historic church located on Rozhdestvenskaya Street. A beautiful example of 17th-century architecture with multiple chapels, including those dedicated to Michael the Archangel and John the Theologian.",
-    "source": "Coordinates verified from Sobory.ru [citation:7]"
   },
   {
     "name": "Monument to Maxim Gorky",
     "lat": 56.324337,
     "lon": 43.983498,
     "description": "A bronze monument to the great Russian writer Maxim Gorky, created in 1957 by sculptor I.P. Shmagun. The monument depicts Gorky in a thoughtful pose and is located on Fedorovskogo Embankment.",
-    "source": "Coordinates verified from geographic databases [citation:9]"
   },
   {
     "name": "Monument to the Heroes of the Volga Military Flotilla",
     "lat": 56.329040,
     "lon": 43.988403,
     "description": "A monument commemorating the feat of the sailors of the Volga Military Flotilla. The granite monument was erected on Markin Square in honor of the 60th anniversary of the October Revolution, designed by P.I. Gusev.",
-    "source": "Coordinates verified from geographic databases [citation:9]"
   }
 ];
 
