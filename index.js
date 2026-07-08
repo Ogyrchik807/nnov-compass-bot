@@ -15,6 +15,8 @@ export default {
           const location = update.message.location;
           let replyText = '';
           let replyKeyboard = null;
+          let sendPhoto = false;
+          let photoUrl = '';
 
           // --- Команда /start ---
           if (text === '/start') {
@@ -81,6 +83,11 @@ ${nearest.description}
 📍 *Coordinates:* ${nearest.lat}, ${nearest.lon}
 
 🗺️ *Open in Google Maps:* [Click here](https://www.google.com/maps?q=${nearest.lat},${nearest.lon})`;
+
+              if (nearest.image) {
+                sendPhoto = true;
+                photoUrl = nearest.image;
+              }
             } else {
               replyText = '😔 Sorry, I couldn\'t find any landmarks near you. Try sending your location again or use /start to see the main menu.';
             }
@@ -91,23 +98,40 @@ ${nearest.description}
 `🤔 I didn't understand that command. Please use /start to see the main menu or /help for a list of commands.`;
           }
 
-          // --- Отправка ответа ---
-          const payload = {
-            chat_id: chatId,
-            text: replyText,
-            parse_mode: 'Markdown',
-            disable_web_page_preview: true
-          };
+          // --- Единая отправка ответа ---
+          if (replyText) {
+            const payload = {
+              chat_id: chatId,
+              text: replyText,
+              parse_mode: 'Markdown',
+              disable_web_page_preview: true
+            };
 
-          if (replyKeyboard) {
-            payload.reply_markup = JSON.stringify(replyKeyboard);
+            if (replyKeyboard) {
+              payload.reply_markup = JSON.stringify(replyKeyboard);
+            }
+
+            if (sendPhoto && photoUrl) {
+              // Отправляем фото с подписью
+              await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: chatId,
+                  photo: photoUrl,
+                  caption: replyText,
+                  parse_mode: 'Markdown'
+                })
+              });
+            } else {
+              // Отправляем обычное сообщение
+              await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+            }
           }
-
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
         }
 
         return new Response('OK', { status: 200 });
@@ -125,65 +149,75 @@ ${nearest.description}
 
 // --- 📍 БАЗА ДАННЫХ ДОСТОПРИМЕЧАТЕЛЬНОСТЕЙ ---
 const LANDMARKS = [
-  {
+ {
     name: 'Nizhny Novgorod Kremlin',
     lat: 56.3287,
     lon: 44.0020,
-    description: 'The main fortress of the city, founded in 1508. It is one of the best-preserved medieval fortresses in Russia, with 13 towers and stunning views of the Volga and Oka rivers.'
+    description: 'The main fortress of the city, founded in 1508. One of the best-preserved medieval fortresses in Russia, with 13 towers and stunning views of the Volga and Oka rivers.',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Night_view_of_a_tower_of_the_Nizhny_Novgorod_Kremlin%2C_Russia.jpg'
   },
   {
     name: 'Chkalov Stairs',
     lat: 56.330890,
     lon: 44.009448,
-    description: 'A famous staircase shaped like a figure eight, leading down to the Volga River. Built in 1943, it offers a magnificent panoramic view of the river and the city.'
+    description: 'A famous staircase shaped like a figure eight, leading down to the Volga River. Built in 1943, it offers a magnificent panoramic view of the river and the city.',
+    image: 'https://avatars.mds.yandex.net/i?id=a4d547d749fae0a372cfeab07631d132_l-7882711-images-thumbs&n=13'
   },
   {
     name: 'Christmas (Rozhdestvenskaya) Church',
     lat: 56.327306,
     lon: 43.984992,
-    description: 'One of the most beautiful churches in Nizhny Novgorod, located at the confluence of the Oka and Volga rivers. Built in the 17th century, it features stunning Russian Orthodox architecture.'
+    description: 'One of the most beautiful churches in Nizhny Novgorod, located at the confluence of the Oka and Volga rivers. Built in the 17th century, it features stunning Russian Orthodox architecture.',
+    image: 'https://i2020.otzovik.com/2020/06/18/10219183/img/997274_78197388.jpeg'
   },
   {
     name: 'Nizhny Novgorod Fair',
     lat: 56.32839171063699,
     lon: 43.961235738303515,
-    description: 'The site of the largest fair in the Russian Empire in the 19th century. The main building is a magnificent example of classical architecture and now hosts various events.'
+    description: 'The site of the largest fair in the Russian Empire in the 19th century. The main building is a magnificent example of classical architecture and now hosts various events.',
+    image: 'https://avatars.mds.yandex.net/i?id=25c4a23ed526d674609db3581d2194bf_l-10268218-images-thumbs&n=13'
   },
   {
     name: 'Bolshaya Pokrovskaya Street',
     lat: 56.317088,
     lon: 43.994829,
-    description: 'The main pedestrian street of Nizhny Novgorod, lined with historic buildings, shops, cafes, and street musicians. The heart of the city\'s cultural life.'
+    description: 'The main pedestrian street of Nizhny Novgorod, lined with historic buildings, shops, cafes, and street musicians. The heart of the city\'s cultural life.',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Bolshaya_Pokrovskaya_Street%2C_Nizhny_Novgorod.jpg'
   },
   {
     name: 'Rukavishnikov Estate Museum',
-    lat: 56.329312,
-    lon: 44.016083,
-    description: 'A magnificent 19th-century mansion of the Rukavishnikov family, now a museum. It showcases the luxurious lifestyle of the local nobility with beautifully preserved interiors.'
-  },
-    {
-    "name": "Church of St. John the Baptist",
-    "lat": 56.329747,
-    "lon": 43.998089,
-    "description": "One of the oldest Orthodox churches in Nizhny Novgorod, mentioned from the 15th century. The stone church was consecrated in 1683 and is located on Rozhdestvenskaya Street near the Kremlin.",
+    lat: 56.326289,
+    lon: 44.001542,
+    description: 'A magnificent 19th-century mansion of the Rukavishnikov family, now a museum. It showcases the luxurious lifestyle of the local nobility with beautifully preserved interiors.',
+    image: 'https://avatars.mds.yandex.net/i?id=256bd2f473442013e3628c4386ff2d400076b683-8000127-images-thumbs&n=13'
   },
   {
-    "name": "Church of the Nativity of John the Baptist on the Market",
-    "lat": 56.329792,
-    "lon": 43.998142,
-    "description": "A historic church located on Rozhdestvenskaya Street. A beautiful example of 17th-century architecture with multiple chapels, including those dedicated to Michael the Archangel and John the Theologian.",
+    name: 'Church of St. John the Baptist',
+    lat: 56.329747,
+    lon: 43.998089,
+    description: 'One of the oldest Orthodox churches in Nizhny Novgorod, mentioned from the 15th century. The stone church was consecrated in 1683 and is located on Rozhdestvenskaya Street near the Kremlin.',
+    image: 'https://avatars.mds.yandex.net/i?id=9525744d47686c5136d49fdbe65aa0ef_l-10272338-images-thumbs&n=13'
   },
   {
-    "name": "Monument to Maxim Gorky",
-    "lat": 56.324337,
-    "lon": 43.983498,
-    "description": "A bronze monument to the great Russian writer Maxim Gorky, created in 1957 by sculptor I.P. Shmagun. The monument depicts Gorky in a thoughtful pose and is located on Fedorovskogo Embankment.",
+    name: 'Church of the Nativity of John the Baptist',
+    lat: 56.329792,
+    lon: 43.998142,
+    description: 'A historic church located on Rozhdestvenskaya Street. A beautiful example of 17th-century architecture with multiple chapels.',
+    image: 'https://avatars.mds.yandex.net/i?id=91266355409338d1d0bc66e0ca500778_l-16110730-images-thumbs&n=13'
   },
   {
-    "name": "Monument to the Heroes of the Volga Military Flotilla",
-    "lat": 56.329040,
-    "lon": 43.988403,
-    "description": "A monument commemorating the feat of the sailors of the Volga Military Flotilla. The granite monument was erected on Markin Square in honor of the 60th anniversary of the October Revolution, designed by P.I. Gusev.",
+    name: 'Monument to Maxim Gorky',
+    lat: 56.324337,
+    lon: 43.983498,
+    description: 'A bronze monument to the great Russian writer Maxim Gorky, created in 1957 by sculptor I.P. Shmagun. The monument depicts Gorky in a thoughtful pose.',
+    image: 'https://yastatic.net/naydex/yandex-search/7aimWE113/9f0c5fELaZXl/V_lcw-wcdTDPScfAL7S6qI94auWCnZHO3LjkQSaHEWcs1E8UnT55Npe06tpGhWcjSO1PdkYyvZhVjE40fMpxpMVKv_DK31eC2TolQi5k-8wvyb9AU74zc'
+  },
+  {
+    name: 'Monument to the Heroes of the Volga Flotilla',
+    lat: 56.329040,
+    lon: 43.988403,
+    description: 'A monument commemorating the feat of the sailors of the Volga Military Flotilla. The granite monument was erected on Markin Square in honor of the 60th anniversary of the October Revolution.',
+    image: 'https://avatars.mds.yandex.net/get-entity_search/122335/162670577/S600xU_2x'
   }
 ];
 
